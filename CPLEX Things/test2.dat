@@ -14,6 +14,8 @@
  MaxWaitTime = 1; /* hours */
  Mu = 3; /* clients per hour */
  MinFacilityWorkload = 1.5; /* clients per hour */
+ M3 = 1;
+ DeltaLambdaK = [2, 2.89, 2.91]; /* stolen from MNL.gms */
 
 ZonePopulationPercentage = [
 	0.061,
