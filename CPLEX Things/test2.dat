@@ -9,6 +9,11 @@
  lambda = 10;
  gamma = 1.4;
  Aij = 1.0;
+ MaxServersAtFacility = 3; /* matching TotalAvailableServers for now */
+ TotalAvailableServers = 3;
+ MaxWaitTime = 1; /* hours */
+ Mu = 3; /* clients per hour */
+ MinFacilityWorkload = 1.5; /* clients per hour */
 
 ZonePopulationPercentage = [
 	0.061,

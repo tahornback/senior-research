@@ -15,17 +15,24 @@
  float Aij = ...;
  int NodeCount = ...;
  int FacilityCount = ...;
+ int MaxServersAtFacility = ...; /* matching TotalAvailableServers for now */
+ int TotalAvailableServers = ...;
+ int MaxWaitTime = ...; /* hours */
+ int Mu = ...; /* clients per hour */
+ float MinFacilityWorkload = ...; /* clients per hour */
  range Nodes = 1..NodeCount;
  range Facilities = 1..FacilityCount;
+ range Servers = 1..MaxServersAtFacility;
  float ZonePopulationPercentage[Nodes] = ...;
  ZoneFacilityPair ZoneToFacilityAllocations[Nodes] = ...;
  float ZoneToFacilityArray[Nodes] = ...;
  float GivenTable[Nodes][Facilities]= ...;
  
- dvar int Xij[Nodes][Facilities];
+ dvar int Xij[Nodes][Facilities]; /* clients from zone i require service from node j */
+ dvar int Sjk[Facilities][Servers]; /* node j has k or nore servers */
 
 
- maximize 
+ maximize /* Equation 20 */
  	lambda * (sum(i in Nodes) 
  		ZonePopulationPercentage[i] * (sum(j in Facilities)
  			(maxl(Aij-gamma*GivenTable[i][j], 0)) * Xij[i][j]
@@ -34,9 +41,12 @@
  	
  subject to {
    forall(i in Nodes)
-   	  EachClientZoneHasFacility: (sum(j in Facilities) Xij[i][j]) == 1;
+   	  EachClientZoneHasFacility: (sum(j in Facilities) Xij[i][j]) == 1; /* Equation 21 */
    forall(i in Nodes) forall(j in Facilities)
-   	  DecisionVariablesAreBoolean: Xij[i][j] == 0 || Xij[i][j] == 1;
-   
+   	  XijBoolean: Xij[i][j] == 0 || Xij[i][j] == 1; /* Equation 26, part a */
+   forall(j in Facilities) forall(k in Servers)
+   	  SjkBoolean: Sjk[j][k] == 0 || Sjk[j][k] == 1; /* Equation 26, part b */
+   forall(i in Nodes) forall(j in Facilities)
+   	  ClientsCanOnlyVisitOpenFacilities: Xij[i][j] <= Sjk[j][1]; /* Equation 22 */
  }
  	
