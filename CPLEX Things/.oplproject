@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ASCII"?><project>
+	<version>1.0</version>
+	<configs>
+		<config default="true" name="Configuration1" category="opl">
+			<ref name="Testing.mod" type="model">
+			</ref>
+			<ref name="Testing.ops" type="setting">
+			</ref>
+			<ref name="Testing.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="Configuration2" category="opl">
+			<ref name="test2.mod" type="model">
+			</ref>
+			<ref name="test2.dat" type="data">
+			</ref>
+		</config>
+	</configs>
+	
+</project>
