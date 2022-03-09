@@ -14,6 +14,8 @@
 			</ref>
 			<ref name="test2.dat" type="data">
 			</ref>
+			<ref name="test2.ops" type="setting">
+			</ref>
 		</config>
 	</configs>
 	

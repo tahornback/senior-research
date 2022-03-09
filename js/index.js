@@ -2,21 +2,22 @@ import axios from 'axios';
 import fastcsv from 'fast-csv';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
-// import covidTestingSites from '../arcgisCovidTestingLocations.json'
 
-let writeStream = fs.createWriteStream('covidSites.csv')
-let newObj = {features:[]}
+async function parseArcgisData () {
+    let writeStream = fs.createWriteStream('covidSites.csv')
+    let newObj = {features:[]}
 
-const covidTestingSites = JSON.parse(await readFile(new URL('../arcgisCovidTestingLocations.json', import.meta.url)));
+    const covidTestingSites = JSON.parse(await readFile(new URL('../arcgisCovidTestingLocations.json', import.meta.url)));
 
-for(let i = 0; i < covidTestingSites.features.length; i++) {
-    delete covidTestingSites.features[i].geometry;
-    newObj.features[i]=covidTestingSites.features[i].attributes;
+    for(let i = 0; i < covidTestingSites.features.length; i++) {
+        delete covidTestingSites.features[i].geometry;
+        newObj.features[i]=covidTestingSites.features[i].attributes;
+    }
+
+    fastcsv  
+    .write(newObj.features, { headers: true })
+    .pipe(writeStream);
 }
-
-fastcsv  
-.write(newObj.features, { headers: true })
-.pipe(writeStream);
 
 async function addPercentPopulation () {
 

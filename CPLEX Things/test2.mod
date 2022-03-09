@@ -4,11 +4,11 @@
  * Creation Date: Feb 7, 2022 at 9:48:40 PM
  *********************************************/
  
- tuple ZoneFacilityPair {
-	int zone;
-	int facility;
-	float allocationValue;
-}
+// tuple ZoneFacilityPair {
+//	int zone;
+//	int facility;
+//	float allocationValue;
+//}
  
  float lambda = ...;
  float gamma = ...;
@@ -18,26 +18,29 @@
  int MaxServersAtFacility = ...; /* matching TotalAvailableServers for now */
  int TotalAvailableServers = ...;
  int MaxWaitTime = ...; /* hours */
- int Mu = ...; /* clients per hour */
- int M3 = ...; /* "big number" */
+// int Mu = ...; /* clients per hour */
+ float M3 = ...; /* "big number" */
  float MinFacilityWorkload = ...; /* clients per hour */
  range Nodes = 1..NodeCount;
  range Facilities = 1..FacilityCount;
  range Servers = 1..MaxServersAtFacility;
+ range ServersMinusOne = 1..(MaxServersAtFacility - 1);
+ range ServersFromZero = 0..(MaxServersAtFacility);
  float ZonePopulationPercentage[Nodes] = ...;
- ZoneFacilityPair ZoneToFacilityAllocations[Nodes] = ...;
- float ZoneToFacilityArray[Nodes] = ...;
+// ZoneFacilityPair ZoneToFacilityAllocations[Nodes] = ...;
+// float ZoneToFacilityArray[Nodes] = ...;
  float GivenTable[Nodes][Facilities]= ...;
- float DeltaLambdaK[Servers] = ...;
+ float LambdaK[ServersFromZero] = ...;
  
  dvar int Xij[Nodes][Facilities]; /* clients from zone i require service from node j */
  dvar int Sjk[Facilities][Servers]; /* node j has k or nore servers */
 
 
  maximize /* Equation 20 */
- 	lambda * (sum(i in Nodes) 
+ 	lambda * 
+ 	(sum(i in Nodes) 
  		ZonePopulationPercentage[i] * (sum(j in Facilities)
- 			(maxl(Aij-gamma*GivenTable[i][j], 0)) * Xij[i][j]
+ 			(maxl(Aij-(gamma*GivenTable[i][j]), 0)) * Xij[i][j]
  		)
  	);
  	
@@ -52,18 +55,25 @@
    	  ClientsCanOnlyVisitOpenFacilities: Xij[i][j] <= Sjk[j][1]; /* Equation 22 */
    forall(i in Nodes) forall(j in Facilities) forall(p in Facilities)
    	  ClientsChooseClosestFacility: /* Equation 23 */
-   	  	GivenTable[i][j]*Xij[i][j] <= GivenTable[i][p] + M3 * (1-Sjk[p][1]); 
-   forall(j in Facilities)
-      OpenFacilityMaintainsMinimumWorkload: /* Equation 24 */
-      	lambda * (sum(i in Nodes) 
-	 		ZonePopulationPercentage[i] * (sum(j in Facilities)
-	 			(maxl(Aij-gamma*GivenTable[i][j], 0)) * Xij[i][j]
- 			)) >= MinFacilityWorkload*Sjk[j][1];
-   forall(j in Facilities)
-      OpenFacilityLessThanMaxWait: /* Equation 25 */
-      	lambda * (sum(i in Nodes) 
-	 		ZonePopulationPercentage[i] * (sum(j in Facilities)
-	 			(maxl(Aij-gamma*GivenTable[i][j], 0)) * Xij[i][j]
- 			)) <= sum(k in Servers) DeltaLambdaK[k] * Sjk[j][k];
+   	  	GivenTable[i][j]*Xij[i][j] <= GivenTable[i][p] + (M3 * (1-Sjk[p][1])); 
+//   forall(j in Facilities)
+//      OpenFacilityMaintainsMinimumWorkload: /* Equation 24 */
+//      	lambda * (sum(i in Nodes) 
+//	 		ZonePopulationPercentage[i] * 
+//	 			(maxl(Aij-(gamma*GivenTable[i][j]), 0)) * Xij[i][j]
+// 			) >= MinFacilityWorkload*Sjk[j][1];
+//   forall(j in Facilities)
+//      OpenFacilityLessThanMaxWait: /* Equation 25 */
+//      	lambda * (sum(i in Nodes) 
+//	 		ZonePopulationPercentage[i] * 
+//	 			(maxl(Aij-(gamma*GivenTable[i][j]), 0)) * Xij[i][j]
+// 			 ) <= (sum(k in Servers) (LambdaK[k] - LambdaK[k-1]) * Sjk[j][k]);
+   KServersOrLess: /* Equation 14 */
+   	  (sum(j in Facilities) (sum(k in Servers) Sjk[j][k])) <= TotalAvailableServers;
+   forall(j in Facilities) forall(k in ServersMinusOne) /* Equation 15 */
+     OnlyAddNewServerIfOneLessExists: Sjk[j][k+1] <= Sjk[j][k];
+     
+//   test: (sum(k in Servers) Sjk[5][k]) == 0;
+   
  }
  	
